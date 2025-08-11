@@ -8,10 +8,13 @@ datasource db {
 }
 
 model Categorie {
-  id     Int    @id @default(autoincrement())
-  nom    String
-  menus  Menu[]
+  id        Int      @id @default(autoincrement())
+  nom      String
+  imageUrl  String?   // Lien vers l'image
+  menus     Menu[]
+  createdAt DateTime @default(now())
 }
+
 
 model Menu {
   id          Int           @id @default(autoincrement())
