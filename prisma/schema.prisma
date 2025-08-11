@@ -15,14 +15,14 @@ model Categorie {
   createdAt DateTime @default(now())
 }
 
-
 model Menu {
-  id          Int           @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   nom         String
-  description String
+  description String?
   prix        Float
   disponible  Boolean       @default(true)
-  categorie   Categorie     @relation(fields: [categorieId], references: [id])
+  image       String?   // chemin ou nom du fichier
+  categorie   Categorie @relation(fields: [categorieId], references: [id])
   categorieId Int
   commandes   CommandeMenu[]
   panierItems PanierItem[]   // 👈 Ajout pour relation inverse avec PanierItem

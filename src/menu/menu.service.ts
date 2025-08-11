@@ -16,6 +16,7 @@ export class MenuService {
         prix: data.prix,
         disponible: data.disponible ?? true,
         categorie: { connect: { id: data.categorieId } }, // ✅ Relation
+        image: data.image ? data.image : null, // ✅ Gestion de l'image
       },
     });
   }

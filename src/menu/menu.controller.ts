@@ -6,18 +6,41 @@ import {
   Param,
   Patch,
   Delete,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { MenuService } from './menu.service';
 import { CreateMenuDto } from './dto/create-menu.dto';
 import { UpdateMenuDto } from './dto/update-menu.dto';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 @Controller('menus')
 export class MenuController {
   constructor(private readonly menuService: MenuService) {}
 
   @Post('createmenu')
-  create(@Body() createMenuDto: CreateMenuDto) {
-    return this.menuService.create(createMenuDto);
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads/menus',
+        filename: (req, file, callback) => {
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          callback(null, uniqueSuffix + extname(file.originalname));
+        },
+      }),
+    }),
+  )
+  create(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() createMenuDto: CreateMenuDto,
+  ) {
+    return this.menuService.create({
+      ...createMenuDto,
+      image: file?.filename || null,
+    });
   }
 
   @Get()

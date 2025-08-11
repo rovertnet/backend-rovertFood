@@ -4,5 +4,6 @@ export class CreateMenuDto {
   description: string;
   prix: number;
   disponible?: boolean; // optionnel
+  image?: string | null; // nom du fichier image
   categorieId: number; // ID de la catégorie associée
 }
