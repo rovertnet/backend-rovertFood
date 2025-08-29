@@ -23,5 +23,5 @@ export class CreateMenuDto {
 
   @IsOptional()
   @IsString()
-  imagePath?: string;
+  image?: string;
 }
