@@ -18,7 +18,7 @@ async function bootstrap() {
 
   // ✅ CORS activé
   app.enableCors({
-    origin: '*', // Mets ton domaine en prod (ex: http://localhost:5173 ou https://tonsite.com)
+    origin: 'http://localhost:5173', // Mets ton domaine en prod (ex: http://localhost:5173 ou https://tonsite.com)
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     allowedHeaders: 'Content-Type, Authorization',
   });
