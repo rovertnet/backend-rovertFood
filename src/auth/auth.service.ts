@@ -20,6 +20,29 @@ export class AuthService {
     return user;
   }
 
+  async findAll() {
+    return this.prisma.user.findMany({
+      select: {
+        id: true,
+        nom: true,
+        email: true,
+        role: true,
+      },
+    });
+  }
+
+  async findOne(id: number) {
+    return this.prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        nom: true,
+        email: true,
+        role: true,
+      },
+    });
+  }
+
   async login(user: any) {
     const payload = { sub: user.id, email: user.email, role: user.role };
     return {
