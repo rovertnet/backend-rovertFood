@@ -20,7 +20,7 @@ import { extname } from 'path';
 export class MenuController {
   constructor(private readonly menuService: MenuService) {}
 
-  @Post('createmenu')
+  @Post()
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
@@ -37,10 +37,15 @@ export class MenuController {
     @UploadedFile() file: Express.Multer.File,
     @Body() createMenuDto: CreateMenuDto,
   ) {
-    return this.menuService.create({
+    const menuData = {
       ...createMenuDto,
+      prix: parseFloat(createMenuDto.prix as any),
+      categorieId: parseInt(createMenuDto.categorieId as any),
+      disponible: (createMenuDto.disponible as any) === 'true', // 👈 cast any
       image: file?.filename || null,
-    });
+    };
+
+    return this.menuService.create(menuData);
   }
 
   @Get()
@@ -54,8 +59,27 @@ export class MenuController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMenuDto: UpdateMenuDto) {
-    return this.menuService.update(+id, updateMenuDto);
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads/menus',
+        filename: (req, file, callback) => {
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          callback(null, uniqueSuffix + extname(file.originalname));
+        },
+      }),
+    }),
+  )
+  update(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Body() updateMenuDto: UpdateMenuDto,
+  ) {
+    return this.menuService.update(+id, {
+      ...updateMenuDto,
+      image: file?.filename || undefined, // si pas de nouvelle image, on garde l’ancienne
+    });
   }
 
   @Delete(':id')
