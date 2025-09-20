@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'prisma/prisma.service';
+import { PrismaService } from 'prisma/prisma.service'; // ⚡ Vérifie le chemin exact
 import { CreateMenuDto } from './dto/create-menu.dto';
 import { UpdateMenuDto } from './dto/update-menu.dto';
-
 
 @Injectable()
 export class MenuService {
@@ -13,27 +12,47 @@ export class MenuService {
       data: {
         nom: data.nom,
         description: data.description,
-        prix: data.prix,
-        disponible: data.disponible ?? true,
-        categorie: { connect: { id: data.categorieId } }, // ✅ Relation
-        image: data.image ? data.image : null, // ✅ Gestion de l'image
+        prix: Number(data.prix), // assure-toi que c'est bien un number
+        disponible:
+          typeof data.disponible === 'string'
+            ? data.disponible === 'true'
+            : (data.disponible ?? true),
+        categorie: { connect: { id: Number(data.categorieId) } },
+        image: data.image || null,
       },
     });
   }
 
-  findAll() {
-    return this.prisma.menu.findMany({ include: { commandes: true } });
+  async findAll() {
+    return this.prisma.menu.findMany({
+      include: { commandes: true, categorie: true }, // 👈 inclure categorie
+    });
   }
 
-  findOne(id: number) {
-    return this.prisma.menu.findUnique({ where: { id } });
+  async findOne(id: number) {
+    return this.prisma.menu.findUnique({
+      where: { id },
+      include: { categorie: true },
+    });
   }
 
-  update(id: number, data: UpdateMenuDto) {
-    return this.prisma.menu.update({ where: { id }, data });
+  async update(id: number, data: UpdateMenuDto) {
+    return this.prisma.menu.update({
+      where: { id },
+      data: {
+        nom: data.nom,
+        description: data.description,
+        prix: data.prix !== undefined ? Number(data.prix) : undefined,
+        disponible:
+          data.disponible !== undefined ? Boolean(data.disponible) : undefined,
+        categorieId:
+          data.categorieId !== undefined ? Number(data.categorieId) : undefined,
+        image: data.image ?? undefined,
+      },
+    });
   }
 
-  remove(id: number) {
+  async remove(id: number) {
     return this.prisma.menu.delete({ where: { id } });
   }
 }

@@ -24,7 +24,7 @@ export class MenuController {
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
-        destination: './uploads/menus',
+        destination: './uploads',
         filename: (req, file, callback) => {
           const uniqueSuffix =
             Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -38,14 +38,15 @@ export class MenuController {
     @Body() createMenuDto: CreateMenuDto,
   ) {
     const menuData = {
-      ...createMenuDto,
-      prix: parseFloat(createMenuDto.prix as any),
-      categorieId: parseInt(createMenuDto.categorieId as any),
-      disponible: (createMenuDto.disponible as any) === 'true', // 👈 cast any
-      image: file?.filename || null,
+      nom: createMenuDto.nom,
+      description: createMenuDto.description,
+      prix: parseFloat(createMenuDto.prix as any), // ✅ conversion en float
+      categorieId: parseInt(createMenuDto.categorieId as any, 10), // ✅ conversion en int
+      disponible: (createMenuDto.disponible as any) === 'true', // ✅ conversion en boolean
+      image: file?.filename || null, // ✅ image facultative
     };
 
-    return this.menuService.create(menuData);
+    return this.menuService.create(menuData as any);
   }
 
   @Get()
@@ -76,10 +77,23 @@ export class MenuController {
     @UploadedFile() file: Express.Multer.File,
     @Body() updateMenuDto: UpdateMenuDto,
   ) {
-    return this.menuService.update(+id, {
-      ...updateMenuDto,
-      image: file?.filename || undefined, // si pas de nouvelle image, on garde l’ancienne
-    });
+    const menuData: any = {
+      nom: updateMenuDto.nom,
+      description: updateMenuDto.description,
+      prix: updateMenuDto.prix
+        ? parseFloat(updateMenuDto.prix as any)
+        : undefined,
+      categorieId: updateMenuDto.categorieId
+        ? parseInt(updateMenuDto.categorieId as any, 10)
+        : undefined,
+      disponible:
+        updateMenuDto.disponible !== undefined
+          ? (updateMenuDto.disponible as any) === 'true'
+          : undefined,
+      image: file?.filename || undefined, // garde l’ancienne si pas de nouvelle
+    };
+
+    return this.menuService.update(+id, menuData);
   }
 
   @Delete(':id')
