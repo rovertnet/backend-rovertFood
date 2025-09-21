@@ -7,15 +7,25 @@ import { UpdateCommandeDto } from './dto/update-commande.dto';
 export class CommandeService {
   constructor(private prisma: PrismaService) {}
 
+  // 🔹 Création d'une commande avec menus
   create(data: CreateCommandeDto) {
     return this.prisma.commande.create({
       data: {
         userId: data.userId,
+        nom: data.nom,
+        adresse: data.adresse,
+        ville: data.ville,
+        codePostal: data.codePostal,
+        telephone: data.telephone,
+        paiement: data.paiement,
+        total: data.total,
         status: data.status,
-        menus: data.menuIds
+        menus: data.items
           ? {
-              create: data.menuIds.map((id) => ({
-                menu: { connect: { id } },
+              create: data.items.map((item) => ({
+                menu: { connect: { id: item.menuIds } },
+                quantite: item.quantite,
+                prix: item.prix,
               })),
             }
           : undefined,
@@ -23,13 +33,14 @@ export class CommandeService {
       include: { menus: { include: { menu: true } }, user: true },
     });
   }
-
+  // 🔹 Récupérer toutes les commandes
   findAll() {
     return this.prisma.commande.findMany({
       include: { menus: { include: { menu: true } }, user: true },
     });
   }
 
+  // 🔹 Récupérer une commande par ID
   findOne(id: number) {
     return this.prisma.commande.findUnique({
       where: { id },
@@ -37,16 +48,17 @@ export class CommandeService {
     });
   }
 
+  // 🔹 Mettre à jour une commande avec possibilité de changer les menus
   update(id: number, data: UpdateCommandeDto) {
     return this.prisma.commande.update({
       where: { id },
       data: {
         status: data.status,
-        menus: data.menuIds
+        menus: data.items
           ? {
               deleteMany: {}, // Supprime les anciens menus
-              create: data.menuIds.map((menuId) => ({
-                menu: { connect: { id: menuId } },
+              create: data.items.map((item) => ({
+                menu: { connect: { id: item.menuIds } },
               })),
             }
           : undefined,
@@ -55,6 +67,7 @@ export class CommandeService {
     });
   }
 
+  // 🔹 Supprimer une commande
   remove(id: number) {
     return this.prisma.commande.delete({ where: { id } });
   }

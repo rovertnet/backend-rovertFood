@@ -92,15 +92,6 @@ model User {
   wishlists   Wishlist[]
 }
 
-model CommandeMenu {
-  commande   Commande @relation(fields: [commandeId], references: [id])
-  commandeId Int
-  menu       Menu     @relation(fields: [menuId], references: [id])
-  menuId     Int
-
-  @@id([commandeId, menuId])
-}
-
 model Contact {
   id        Int      @id @default(autoincrement())
   nom       String
@@ -114,6 +105,18 @@ enum Role {
   CLIENT
 }
 
+model CommandeMenu {
+  commande   Commande @relation(fields: [commandeId], references: [id])
+  commandeId Int
+  menu       Menu     @relation(fields: [menuId], references: [id])
+  menuId     Int
+
+  quantite   Int      @default(1)
+  prix       Float
+
+  @@id([commandeId, menuId])
+}
+
 model Commande {
   id            Int             @id @default(autoincrement())
   user          User            @relation(fields: [userId], references: [id])
@@ -121,6 +124,15 @@ model Commande {
   date          DateTime        @default(now())
   status        StatutCommande  @default(EN_ATTENTE)
   menus         CommandeMenu[]
+
+  // Infos de livraison
+  nom           String
+  adresse       String
+  ville         String
+  codePostal    String
+  telephone     String
+  paiement      String
+  total         Float
 }
 
 enum StatutCommande {
