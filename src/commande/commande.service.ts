@@ -8,7 +8,12 @@ export class CommandeService {
   constructor(private prisma: PrismaService) {}
 
   // 🔹 Création d'une commande avec menus
-  create(data: CreateCommandeDto) {
+  async create(data: CreateCommandeDto) {
+    // On récupère les menus pour avoir les bons prix
+    const menus = await this.prisma.menu.findMany({
+      where: { id: { in: data.items.map((i) => i.menuIds) } },
+    });
+
     return this.prisma.commande.create({
       data: {
         userId: data.userId,
@@ -22,11 +27,14 @@ export class CommandeService {
         status: data.status,
         menus: data.items
           ? {
-              create: data.items.map((item) => ({
-                menu: { connect: { id: item.menuIds } },
-                quantite: item.quantite,
-                prix: item.prix,
-              })),
+              create: data.items.map((item) => {
+                const menu = menus.find((m) => m.id === item.menuIds);
+                return {
+                  menu: { connect: { id: item.menuIds } },
+                  quantite: item.quantite,
+                  prix: menu?.prix ?? 0, // prix sécurisé depuis la DB
+                };
+              }),
             }
           : undefined,
       },
@@ -49,17 +57,28 @@ export class CommandeService {
   }
 
   // 🔹 Mettre à jour une commande avec possibilité de changer les menus
-  update(id: number, data: UpdateCommandeDto) {
+  async update(id: number, data: UpdateCommandeDto) {
+    const menus = data.items
+      ? await this.prisma.menu.findMany({
+          where: { id: { in: data.items.map((i) => i.menuIds) } },
+        })
+      : [];
+
     return this.prisma.commande.update({
       where: { id },
       data: {
         status: data.status,
         menus: data.items
           ? {
-              deleteMany: {}, // Supprime les anciens menus
-              create: data.items.map((item) => ({
-                menu: { connect: { id: item.menuIds } },
-              })),
+              deleteMany: {}, // supprime les anciens menus
+              create: data.items.map((item) => {
+                const menu = menus.find((m) => m.id === item.menuIds);
+                return {
+                  menu: { connect: { id: item.menuIds } },
+                  quantite: item.quantite,
+                  prix: menu?.prix ?? 0,
+                };
+              }),
             }
           : undefined,
       },
