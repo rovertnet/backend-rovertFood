@@ -31,6 +31,13 @@
       return this.authService.login(user);
     }
 
+    // Exemple NestJS
+    @Get('me')
+    @UseGuards(JwtAuthGuard)
+    getMe(@Request() req) {
+      return req.user; // req.user est rempli par le guard JWT
+    }
+
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles('ADMIN')
     @Get('users')
