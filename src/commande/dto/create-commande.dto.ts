@@ -5,12 +5,14 @@ import {
   IsArray,
   IsString,
   IsNumber,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { StatutCommande } from '@prisma/client';
 
 class CommandeItemDto {
   @IsInt()
-  menuIds: number;
+  menuId: number; // ✅ corrige ici
 
   @IsInt()
   quantite: number;
@@ -38,14 +40,16 @@ export class CreateCommandeDto {
   @IsString()
   telephone: string;
 
-  @IsString()
-  paiement: string; // "Carte" | "PayPal" | "Espèces"
+  @IsEnum(['Carte', 'PayPal', 'Espèces']) // ✅ plus strict
+  paiement: string;
 
   @IsOptional()
   @IsEnum(StatutCommande)
   status?: StatutCommande;
 
   @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CommandeItemDto) // ✅ pour bien valider chaque objet
   items: CommandeItemDto[];
 
   @IsNumber()
