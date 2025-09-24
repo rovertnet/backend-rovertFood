@@ -19,21 +19,21 @@ export class PanierController {
 
   @Post('item')
   addItem(@Body() dto: AddItemDto, @Req() req) {
-    return this.panierService.addItem({ ...dto, userId: req.user.id });
+    return this.panierService.addItem({ ...dto, userId: req.user.userId });
   }
 
   @Get()
   getPanier(@Req() req) {
-    return this.panierService.findByUser(req.user.id);
+    return this.panierService.findByUser(req.user.userId);
   }
 
   @Delete('item/:id')
   removeItem(@Param('id') id: string, @Req() req) {
-    return this.panierService.removeItem(Number(id), req.user.id);
+    return this.panierService.removeItem(Number(id), req.user.userId);
   }
 
   @Delete('clear')
   clearPanier(@Req() req) {
-    return this.panierService.clearPanier(req.user.id);
+    return this.panierService.clearPanier(req.user.userId);
   }
 }
